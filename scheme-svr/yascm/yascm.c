@@ -20,6 +20,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <signal.h>
+#include <errno.h>
 #include "yascm.h"
 
 extern FILE *yyin;
@@ -784,8 +786,17 @@ object *make_env(object *var, object *up)
 	return env;
 }
 
+static void sig_alrm(int signo)
+{
+	printf("sorry, deadline!\n");
+	fflush(stdout);
+	exit(1);
+}
+
 int main(int argc, char **argv)
 {
+	if (signal(SIGALRM, sig_alrm) == SIG_ERR)
+		DIE("signal fail: %s", strerror(errno));
 	Nil = create_object(OTHER);
 	Else = create_object(OTHER);
 	Ok = create_object(OTHER);
@@ -799,7 +810,9 @@ int main(int argc, char **argv)
 	fprintf(stderr, "welcome\n> ");
 	while (NOT_END) {
 		yyparse(&obj);
+		alarm(1);
 		object_print(eval(genv, obj));
+		alarm(0);
 		printf("\n");
 		fflush(stdout);
 		fprintf(stderr, "\n> ");
