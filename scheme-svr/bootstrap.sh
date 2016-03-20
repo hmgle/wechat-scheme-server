@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/usr/bin/env bash
 
 [[ -p /tmp/scmfifo ]] || mkfifo /tmp/scmfifo
 cd yascm && make
